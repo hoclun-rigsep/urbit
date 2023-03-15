@@ -22,8 +22,8 @@
   |=  [our=@p now=@da]
   =/  ego  (scot %p our)
   =/  wen  (scot %da now)
-  :*  .^(rock:tire %cx /(scot %p our)//(scot %da now)/tire)
-      .^(=cone %cx /(scot %p our)//(scot %da now)/domes)
+  :*  .^(rock:tire %cx /[ego]//[wen]/tire)
+      .^(=cone %cx /[ego]//[wen]/domes)
       .^((map desk [ship desk]) %gx /[ego]/hood/[wen]/kiln/sources/noun)
       .^  (map [desk ship desk] sync-state)  %gx
           /[ego]/hood/[wen]/kiln/syncs/noun
@@ -32,19 +32,53 @@
 ::  +report-vats: report on all desk installations
 ::
 ++  report-vats
-  |=  [our=@p now=@da]
+  |=  $:  our=@p
+          now=@da
+          $:  verb=?
+              show-suspended=?
+              show-running=?
+              show-blocking=?
+              show-nonexistent=?
+          ==
+      ==
   ^-  tang
-  =/  desks  .^((set desk) %cd /(scot %p our)/base/(scot %da now))
+  =/  ego  (scot %p our)
+  =/  wen  (scot %da now)
+  =/  desks  .^((set desk) %cd /[ego]/base/[wen])
   =/  prep  (report-prep our now)
-  %+  turn  ~(tap in desks)
-  |=(syd=desk (report-vat prep our now syd))
+  =/  pikes  .^(pikes %gx /[ego]/hood/[wen]/kiln/pikes/kiln-pikes)
+  %+  turn
+    %+  skim  ~(tap in desks)
+    |=  =desk
+    =+  .^(rock:tire:clay %cx /(scot %p our)//(scot %da now)/tire)
+    =/  zest  -:(~(got by -) desk)
+    =/  running    =(%live zest)
+    =/  suspended  =(%dead zest)
+    =/  exists     !=(ud.cass 0):.^(=cass %cw /[ego]/[desk]/[wen])
+    =/  bad-desk   ?!(.^(? %cu /[ego]/[desk]/[wen]/sys/kelvin))
+    =/  blocking
+      =/  pike  (~(got by pikes) desk)
+      ?.  =(%base desk) :: if base, not blocker
+        |
+      ?.  =(%live zest.pike) :: if desk is not live return negative
+        |
+      =/  kel  (weft .^(* cx/(en-beam [our %base da+now] /sys/kelvin)))  
+      !(~(has in wic.pike) kel) 
+    :: just unconditionally show "bad" desks, whatever that means
+    ?|  bad-desk
+        &(suspended show-suspended)
+        &(running show-running)
+        &(blocking show-blocking)
+        &(!exists show-nonexistent)
+    ==
+  |=(=desk (report-vat prep our now desk verb))
 ::  +report-vat: report on a single desk installation
 ::
 ++  report-vat
   |=  $:  $:  tyr=rock:tire  =cone  sor=(map desk [ship desk])
               zyn=(map [desk ship desk] sync-state)
           ==
-          our=ship  now=@da  syd=desk
+          our=ship  now=@da  syd=desk  verb=?
       ==
   ^-  tank
   =/  ego  (scot %p our)
@@ -92,6 +126,12 @@
       (lte lal.a lal.b)
     |=  [=weft =tape]
     (welp " {<[lal num]:weft>}" tape)
+  ?.  verb
+    :~  leaf/"/sys/kelvin:     {kul}"
+        leaf/"app status:       {sat}"
+        leaf/"publishing ship:  {?~(sink <~> <(get-publisher our syd now)>)}"
+        leaf/"pending updates:  {<`(list [@tas @ud])`~(tap in wic.dek)>}"
+    ==
   :~  leaf/"/sys/kelvin:     {kul}"
       leaf/"base hash:        {?.(=(1 (lent meb)) <meb> <(head meb)>)}"
       leaf/"%cz hash:         {<hash>}"
